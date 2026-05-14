@@ -1,0 +1,62 @@
+local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/xHeptc/Kavo-UI-Library/main/source.lua"))()
+local Window = Library.CreateLib("TRẦN ANH PHÚ - SNIPER FRUIT", "DarkTheme")
+
+-- 1. BẬT SẴN CHỐNG BAN (ANTI-BAN)
+getgenv().AntiBan = true
+
+-- 2. TAB ĐẶC SẢN SĂN TRÁI
+local Tab = Window:NewTab("Săn Trái Spawn")
+local Section = Tab:NewSection("Đặc Sản: Săn & Đổi Server")
+
+-- BIẾN KIỂM TRA
+_G.AutoCollect = false
+_G.AutoHop = false
+
+-- NÚT BẬT/TẮT TỰ NHẶT TRÁI (CÓ BAY LẠI)
+Section:NewToggle("Bật Săn Trái Spawn", "Thấy trái là bay lại nhặt ngay", function(state)
+    _G.AutoCollect = state
+    spawn(function()
+        while _G.AutoCollect do wait(0.5)
+            pcall(function()
+                for i,v in pairs(game.Workspace:GetChildren()) do
+                    if v:IsA("Tool") and v:FindFirstChild("Handle") then
+                        -- LỆNH BAY (TWEEN) ĐẾN TRÁI
+                        game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = v.Handle.CFrame
+                        print("Admin Phú đã nhặt được trái!")
+                    end
+                end
+            end)
+        end
+    end)
+end)
+
+-- NÚT BẬT/TẮT TỰ ĐỔI SERVER (SERVER HOP)
+Section:NewToggle("Bật Tự Đổi Server", "Không có trái là đổi sever ngay", function(state)
+    _G.AutoHop = state
+    spawn(function()
+        while _G.AutoHop do wait(3)
+            local HttpService = game:GetService("HttpService")
+            local TPS = game:GetService("TeleportService")
+            local Api = "https://games.roblox.com/v1/games/" .. game.PlaceId .. "/servers/Public?sortOrder=Asc&limit=100"
+            
+            local function GetServer()
+                local Data = HttpService:JSONDecode(game:HttpGet(Api))
+                for i, v in pairs(Data.data) do
+                    if v.playing < v.maxPlayers and v.id ~= game.JobId then
+                        return v.id
+                    end
+                end
+            end
+            
+            local ServerId = GetServer()
+            if ServerId then
+                TPS:TeleportToPlaceInstance(game.PlaceId, ServerId, game.Players.LocalPlayer)
+            end
+        end
+    end)
+end)
+
+-- 3. NÚT DẤU TRỪ THU NHỎ SÁT NÚT X
+Section:NewKeybind("Đóng/Mở Bảng (-)", "Nhấn RightControl hoặc Icon để thu nhỏ", Enum.KeyCode.RightControl, function()
+    Library:ToggleUI()
+end)
